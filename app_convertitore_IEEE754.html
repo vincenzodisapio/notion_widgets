@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Convertitore IEEE 754</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 40px;
+      background: #f7f7f7;
+      color: #333;
+    }
+    h1 {
+      color: #444;
+    }
+    input, select, button {
+      font-size: 16px;
+      padding: 10px;
+      margin: 5px 0;
+      width: 100%;
+      max-width: 400px;
+    }
+    .container {
+      max-width: 600px;
+      background: #fff;
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    .result {
+      margin-top: 20px;
+      white-space: pre-wrap;
+      font-family: monospace;
+      background: #f0f0f0;
+      padding: 15px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Convertitore IEEE 754</h1>
+    <label for="inputNumber">Numero decimale:</label>
+    <input type="text" id="inputNumber" placeholder="Es. 3.14">
+
+    <label for="bitSelect">Precisione:</label>
+    <select id="bitSelect">
+      <option value="32">32 bit (float)</option>
+      <option value="64" selected>64 bit (double)</option>
+    </select>
+
+    <button onclick="convert()">Converti</button>
+
+    <div class="result" id="output"></div>
+  </div>
+
+  <script>
+    function convertToIEEE754(number, bits) {
+      const buffer = bits === 32 ? new ArrayBuffer(4) : new ArrayBuffer(8);
+      const view = bits === 32 ? new DataView(buffer).setFloat32(0, number) : new DataView(buffer).setFloat64(0, number);
+      const bytes = new Uint8Array(buffer);
+      let binary = '';
+      for (let i = 0; i < bytes.length; i++) {
+        binary += bytes[i].toString(2).padStart(8, '0');
+      }
+      return binary;
+    }
+
+    function formatIEEE754(binary, bits) {
+      const sign = binary.slice(0, 1);
+      const exponentLength = bits === 32 ? 8 : 11;
+      const exponent = binary.slice(1, 1 + exponentLength);
+      const mantissa = binary.slice(1 + exponentLength);
+      return `Bit di segno: ${sign}\nEsponente: ${exponent}\nMantissa: ${mantissa}\n\nTotale:\n${binary}`;
+    }
+
+    function convert() {
+      const input = document.getElementById('inputNumber').value.trim();
+      const bits = parseInt(document.getElementById('bitSelect').value, 10);
+      const output = document.getElementById('output');
+
+      let number = parseFloat(input);
+      if (isNaN(number)) {
+        output.textContent = 'Inserisci un numero valido.';
+        return;
+      }
+
+      try {
+        const binary = convertToIEEE754(number, bits);
+        const formatted = formatIEEE754(binary, bits);
+        output.textContent = formatted;
+      } catch (e) {
+        output.textContent = 'Errore nella conversione.';
+      }
+    }
+  </script>
+</body>
+</html>
